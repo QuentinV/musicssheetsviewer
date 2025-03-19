@@ -1,0 +1,53 @@
+version: '3.3'
+services:
+  musicssheets-db:
+    container_name: musicssheets-db
+    image: mongo
+    ports:
+      - '27017:27017'
+    restart: unless-stopped
+    volumes:
+      - ./db:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=
+      - MONGO_INITDB_ROOT_PASSWORD=
+    networks:
+      - musicssheetsnet
+  musicssheets-service:
+    container_name: musicssheets-service
+    image: "node:20"
+    user: "node"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./:/home/node/app
+    expose:
+      - "3010"
+    ports:
+      - "3010:3010"
+    command: "yarn start"
+    depends_on:
+      - musicssheets-db
+    restart: unless-stopped
+    networks:
+      - musicssheetsnet
+  musicssheets-frontend: 
+    container_name: musicssheets-frontend
+    image: "node:20"
+    user: "node"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./:/home/node/app
+    ports:
+      - "8095:3000"
+    command: "yarn start"
+    restart: unless-stopped
+    networks:
+      - musicssheetsnet
+
+networks:
+  musicssheetsnet:
+    driver: bridge
