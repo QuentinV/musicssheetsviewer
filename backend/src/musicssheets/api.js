@@ -6,6 +6,23 @@ import { getTitle } from './title/service.js';
 import { v4 as uuid } from 'uuid';
 
 export default {
+    'sheets': {
+        get: async (req, res) => {
+            const { rows, first, q } = req.query;
+            
+            const filter = {};
+            if (q) {
+                filter.title = new RegExp("^" + q, "i");
+            } else {
+                filter.title = { "$ne": "" }
+            }
+            
+            const total = await cs.musicssheets.count({ ...filter }, { ignoreUndefined: true });
+            const data = await cs.musicssheets.find({ ...filter }, { limit: Number(rows), skip: Number(first), sort: { title: 1 }, ignoreUndefined: true }).toArray();
+            
+            res.send({ total, data });
+        }
+    },
     'uploads': {
         post: async (req, res) => {
             const filename = `${uuid()}.pdf`;
