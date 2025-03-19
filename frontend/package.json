@@ -43,7 +43,7 @@
     "eslint": "eslint src/**/* --fix",
     "prettier": "prettier --write src/**/*"
   },
-  "proxy": "http://localhost:3005",
+  "proxy": "http://localhost:3010",
   "browserslist": {
     "production": [
       ">0.2%",

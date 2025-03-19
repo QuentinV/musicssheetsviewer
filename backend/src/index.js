@@ -3,10 +3,11 @@ import fs from 'fs';
 import https from 'https';
 import cors from 'cors';
 import { init } from './init.js';
+import musicssheetsapi from './musicssheets/api.js';
 
 const apis = {
     public: {
-        ...import('./musicssheets/api.js')
+        ...musicssheetsapi
     }
 }
 
@@ -19,11 +20,12 @@ app.use(express.json());
 app.use(cors());
 
 // init endpoints
-const defaultPath = '/musicssheets/';
+const defaultPath = '/api/';
 
 Object.keys(apis.public).forEach( path => {
     Object.keys(apis.public[path]).forEach( method => {
         app[method](`${defaultPath}${path}`, apis.public[path][method]);
+        console.log(`Endpoint ${method.toUpperCase()} ${defaultPath}${path} initialized`);
     });
 });
 
@@ -32,6 +34,7 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Something went wrong!' });
 });
+
 
 // Start the Express server
 const port = 3010;
