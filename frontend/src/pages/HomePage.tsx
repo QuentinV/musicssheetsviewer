@@ -7,8 +7,8 @@ export const HomePage = () => {
     const navigate = useNavigate();
     return <>
         <div>
-            <div className='flex justify-content-center'>
-                <h1>Musics</h1>
+            <div>
+                <h1 className='text-center'>Musics</h1>
                 <ListSheets />
             </div>
             <div className='text-center'>

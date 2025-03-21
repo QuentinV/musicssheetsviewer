@@ -68,7 +68,7 @@ export const UploadSheets = () => {
             <FileUpload 
                 ref={fileUploadRef} 
                 name="file[]" 
-                url={`${process.env.REACT_APP_API_HOST}/api/uploads`} 
+                url={`/api/uploads`} 
                 multiple 
                 accept="image/*"
                 onUpload={onTemplateUpload}

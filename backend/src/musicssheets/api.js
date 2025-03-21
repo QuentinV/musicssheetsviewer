@@ -9,7 +9,6 @@ export default {
     'sheets': {
         get: async (req, res) => {
             const { rows, first, q } = req.query;
-            
             const filter = {};
             if (q) {
                 filter.title = new RegExp("^" + q, "i");
@@ -20,12 +19,13 @@ export default {
             const total = await cs.musicssheets.count({ ...filter }, { ignoreUndefined: true });
             const data = await cs.musicssheets.find({ ...filter }, { limit: Number(rows), skip: Number(first), sort: { title: 1 }, ignoreUndefined: true }).toArray();
             
-            res.send({ total, data });
+            res.send({ total, data: data.map( ({ id, title }) => ({ id, title })) });
         }
     },
     'uploads': {
         post: async (req, res) => {
-            const filename = `${uuid()}.pdf`;
+            const id = uuid();
+            const filename = `${id}.pdf`;
             const outputPath = `./uploads/${filename}`; 
             const doc = new PDFDocument({ autoFirstPage: false });
 
@@ -86,6 +86,7 @@ export default {
             }
 
             await cs.musicssheets.insertOne({
+                uuid: id,
                 title: result.res.title,
                 filename
             });
