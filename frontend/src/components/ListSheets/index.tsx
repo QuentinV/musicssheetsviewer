@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from 'primereact/button';
-import { DataView, DataViewLayoutOptions } from 'primereact/dataview';
+import { DataView } from 'primereact/dataview';
 
 interface Sheet {
     id: string;
@@ -17,7 +16,7 @@ export const ListSheets = () => {
         })();
     }, []);
 
-    const itemTemplate = ({ id, title }: Sheet, layout: any) => {
+    const itemTemplate = ({ id, title }: Sheet) => {
         return (
             <div className="w-2 h-5rem p-2 flex flex-wrap font-bold justify-content-center align-items-center border-round border-1 surface-border hover:bg-primary cursor-pointer" key={id}>
                 {title}

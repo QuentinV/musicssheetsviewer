@@ -6,6 +6,7 @@ import 'primereact/resources/themes/mira/theme.css'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import { HomePage } from './pages/HomePage';
 import { UploadPage } from './pages/UploadPage'
+import { SheetPage } from './pages/SheetPage'
 
 
 function App() {
@@ -22,6 +23,12 @@ function App() {
                 path="/upload"
                 element={
                     <UploadPage />
+                }
+            />
+            <Route
+                path="/sheet"
+                element={
+                    <SheetPage />
                 }
             />
         </Routes>
