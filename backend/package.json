@@ -15,8 +15,10 @@
     "type": "module",
     "devDependencies": {
         "busboy": "^1.6.0",
+        "form-data": "^4.0.2",
         "pdfkit": "^0.16.0",
         "tesseract.js": "^6.0.0",
-        "uuid": "^11.1.0"
+        "uuid": "^11.1.0",
+        "node-fetch": "^2.6.1"
     }
 }

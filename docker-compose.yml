@@ -47,6 +47,18 @@ services:
     restart: unless-stopped
     networks:
       - musicssheetsnet
+  audiveris:
+    build: ./audiveris
+    restart: unless-stopped
+    volumes:
+      - ./audiveris:/restapi
+      - ./.audiveris-inputs:/data/inputs
+      - ./data:/data/outputs
+    ports:
+      - "8096:3015"
+    networks:
+      - musicssheetsnet
+    command: "yarn dev"
 
 networks:
   musicssheetsnet:

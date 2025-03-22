@@ -1,9 +1,9 @@
 import { cs } from '../api/db.js';
-import fs from 'fs';
 import Busboy from 'busboy';
 import PDFDocument from 'pdfkit';
-import { getTitle } from './title/service.js';
-import { v4 as uuid } from 'uuid';
+import FormData from 'form-data';
+import { PassThrough } from 'stream';
+import fetch from 'node-fetch';
 
 export default {
     'sheets': {
@@ -23,21 +23,18 @@ export default {
         }
     },
     'uploads': {
-        post: async (req, res) => {
-            const id = uuid();
-            const filename = `${id}.pdf`;
-            const outputPath = `./uploads/${filename}`; 
-            const doc = new PDFDocument({ autoFirstPage: false });
-
-            // Create a write stream to save the PDF to disk
-            const writeStream = fs.createWriteStream(outputPath);
-            doc.pipe(writeStream);
-
-            const busboy = Busboy({ headers: req.headers });
-            let index = 0;
-
-            let titlePromise = null;
-            const result = await new Promise((resolve, reject) => {
+        post: async (req, res) => {           
+            const pdfBuffer = await new Promise((resolve, reject) => {
+                const doc = new PDFDocument({ autoFirstPage: false });
+                const chunks = [];
+                const stream = new PassThrough();
+                stream.on('data', (chunk) => chunks.push(chunk));
+                stream.on('end', () => resolve(Buffer.concat(chunks)));
+                stream.on('error', (err) => reject(err));
+                doc.pipe(stream);
+    
+                
+                const busboy = Busboy({ headers: req.headers });
                 busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
                     let buffer = [];
 
@@ -47,10 +44,6 @@ export default {
                     file.on('end', () => {
                         const completeBuffer = Buffer.concat(buffer);
 
-                        if ( index === 0 ) {
-                            titlePromise = getTitle(completeBuffer);
-                        }
-
                         // Add the image to the PDF on a new page
                         doc.addPage().image(completeBuffer, 0, 0, {
                             width: doc.page.width,
@@ -58,40 +51,42 @@ export default {
                             align: 'center',
                             valign: 'center'
                         });
-
-                        index++;
                     });
                 });
 
-                busboy.on('finish', () => {
-                    // Finalize the PDF and close the write stream
-                    doc.end();
-
-                    writeStream.on('finish', () => {
-                        resolve({ status: 200, res: { message: 'PDF created successfully!' } });
-                    });
-
-                    writeStream.on('error', (err) => {
-                        console.error('Error writing the PDF:', err);
-                        resolve({ status: 500, res: { message: 'Error saving the PDF' } });
-                    });
-                });
+                busboy.on('finish', () => doc.end());
 
                 req.pipe(busboy);
             });
 
-            if ( titlePromise ) {
-                const title = await titlePromise;
-                result.res.title = title;
+            console.log('PDF created');
+
+            const formData = new FormData();
+            formData.append('file', pdfBuffer, 'score.pdf'); // Attach the Buffer with a file name
+
+            try {
+                const result = await fetch('http://localhost:8096/uploads', {
+                    method: 'POST',
+                    body: formData,
+                    headers: formData.getHeaders()
+                });
+    
+                console.log(result.status);
+                const json = await result.json();
+                console.log(json);
+                if ( result.ok ) {
+                    /*await cs.musicssheets.insertOne({
+                        uuid: id,
+                        title: result.res.title,
+                        filename
+                    });*/
+                    return;
+                } 
+            
+                res.status(result.status).send(json);
+            } catch( e ) {
+                res.sendStatus(500);
             }
-
-            await cs.musicssheets.insertOne({
-                uuid: id,
-                title: result.res.title,
-                filename
-            });
-
-            res.status(result.status).send(result.res);
-        },
+        }
     }
 };
