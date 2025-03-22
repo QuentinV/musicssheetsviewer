@@ -17,11 +17,21 @@ app.get('/', (req, res) => {
 
 const inputPath = '/data/inputs';
 
-const execAudiveris = async(id, count) => {
+const execAudiveris = async(id, files) => {
     console.log('[REST-API] execAudiveris');
-    const command = `sh -c "/audiveris-extract/bin/Audiveris -batch -export -output /data/outputs/${id}/temp $(ls ${inputPath}/${id}/*.jpg ${inputPath}/${id}/*.png)"`;
-    return new Promise((resolve, reject) => {
-        exec(command, (error, stdout, stderr) => {
+    fs.writeFileSync(
+        `${inputPath}/${id}/playlist.xml`, 
+        `<play-list>
+${files.map((f, i) => 
+`<excerpt>
+    <path>${f}</path>
+    <sheets-selection>${i+1}</sheets-selection>
+</excerpt>`).join('\r\n')}
+</play-list>               
+        `, { encoding: 'utf-8' });
+
+    await new Promise((resolve, reject) => {
+        exec(`sh -c "/audiveris-extract/bin/Audiveris -batch -playlist ${inputPath}/${id}/playlist.xml"`, (error, stdout, stderr) => {
             if (error) {
                 console.log(`error: ${error}`);
                 reject(error);
@@ -29,13 +39,22 @@ const execAudiveris = async(id, count) => {
             }
             console.log(`stdout: ${stdout}`);
             console.log(`stderr: ${stderr}`);
-            for ( let i = 0; i < count; i++ ) {
-                fs.renameSync(`/data/outputs/${id}/temp/${i}.mxl`, `/data/outputs/${id}/${i}.mxl`);
-            }
-            fs.rmSync(`/data/outputs/${id}/temp`, { recursive: true });
             resolve();
         });
     });
+    await new Promise((resolve, reject) => {
+        exec(`sh -c "/audiveris-extract/bin/Audiveris -batch -export ${inputPath}/${id}/playlist.omr"`, (error, stdout, stderr) => {
+            if (error) {
+                console.log(`error: ${error}`);
+                reject(error);
+                return;
+            }
+            console.log(`stdout: ${stdout}`);
+            console.log(`stderr: ${stderr}`);
+            resolve();
+        });
+    });
+    fs.copyFileSync(`${inputPath}/${id}/playlist.mxl`, `/data/outputs/${id}.mxl`);
 }
 
 app.post('/uploads', async (req, res) => {
@@ -48,25 +67,30 @@ app.post('/uploads', async (req, res) => {
     console.log('[REST-API] Uploading files...');
 
     try {
-        const count = await new Promise((resolve, reject) => {
+        const files = await new Promise((resolve, reject) => {
             let index = 0;
+            const files = [];
             busboy.on('file', (fieldname, file, item, encoding, mimetype) => {
                 const fileExtension = path.extname(item.filename);
                 const buffer = [];
                 file.on('data', data => buffer.push(data));
-                file.on('end', () => fs.writeFileSync(`${inPath}/${index}${fileExtension}`, Buffer.concat(buffer)));
+                file.on('end', () => {
+                    const p = `${inPath}/${index}${fileExtension}`;
+                    fs.writeFileSync(p, Buffer.concat(buffer));
+                    files.push(p);
+                });
             });
 
-            busboy.on('finish', () => resolve(index+1));
+            busboy.on('finish', () => resolve(files));
 
             req.pipe(busboy);
         });
 
-        await execAudiveris(id, count);
+        await execAudiveris(id, files);
 
         fs.rmSync(inPath, { recursive: true });
 
-        res.status(200).send({ id, items: [...Array(count)].map((_, i) => `${i}.mxl`) });
+        res.status(200).send({ id, items: files.map((_, i) => `${i}.mxl`) });
     } catch(err) {
         res.status(500).send({ error: err }); 
     }
