@@ -3,6 +3,7 @@ import Busboy from 'busboy';
 import FormData from 'form-data';
 import fetch from 'node-fetch';
 import fs from 'fs';
+import { getEnv } from '../api/env.js';
 
 export default {
     'sheets': {
@@ -70,7 +71,7 @@ export default {
             });
 
             try {
-                const result = await fetch('http://localhost:8096/uploads', {
+                const result = await fetch(`${getEnv().audiverisHost}/uploads`, {
                     method: 'POST',
                     body: formData,
                     headers: formData.getHeaders()
