@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { DataView } from 'primereact/dataview';
+import { useNavigate } from 'react-router-dom';
 
 interface Sheet {
-    id: string;
+    uuid: string;
     title: string;
 }
 
 export const ListSheets = () => {
     const [sheets, setSheets] = useState<Sheet[]>([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         (async() => {
@@ -16,10 +18,13 @@ export const ListSheets = () => {
         })();
     }, []);
 
-    const itemTemplate = ({ id, title }: Sheet) => {
+    const itemTemplate = ({ uuid, title }: Sheet) => {
         return (
-            <div className="w-2 h-5rem p-2 flex flex-wrap font-bold justify-content-center align-items-center border-round border-1 surface-border hover:bg-primary cursor-pointer" key={id}>
-                {title}
+            <div 
+                className="w-2 h-5rem p-2 flex flex-wrap font-bold justify-content-center align-items-center border-round border-1 surface-border hover:bg-primary cursor-pointer" 
+                key={uuid}
+                onClick={() => navigate(`/sheet/${uuid}`)}>
+                {title ?? uuid}
             </div>
         );
     };
