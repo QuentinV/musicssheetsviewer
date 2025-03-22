@@ -90,7 +90,7 @@ app.post('/uploads', async (req, res) => {
 
         fs.rmSync(inPath, { recursive: true });
 
-        res.status(200).send({ id, items: files.map((_, i) => `${i}.mxl`) });
+        res.status(200).send({ id });
     } catch(err) {
         res.status(500).send({ error: err }); 
     }
