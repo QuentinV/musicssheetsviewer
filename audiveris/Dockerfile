@@ -28,6 +28,8 @@ RUN  ./gradlew build -x test && \
         rm -r /audiveris
 
 RUN mkdir -p /restapi && mkdir -p /data/inputs && mkdir -p /data/outputs
+
 WORKDIR /restapi
+
 
 EXPOSE 3015

@@ -4,6 +4,7 @@ import cors from 'cors';
 import { exec } from 'child_process';
 import Busboy from 'busboy';
 import { v4 as uuid } from 'uuid';
+import path from 'path';
 
 // init middlewares
 const app = express();
@@ -14,9 +15,11 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-const execAudiveris = async(inputPath) => {
-    console.log('[REST-API] execAudiveris', inputPath);
-    const command = `sh -c "/audiveris-extract/bin/Audiveris -batch -export -output /data/outputs ${inputPath}"`;
+const inputPath = '/data/inputs';
+
+const execAudiveris = async(id, count) => {
+    console.log('[REST-API] execAudiveris');
+    const command = `sh -c "/audiveris-extract/bin/Audiveris -batch -export -output /data/outputs/${id}/temp $(ls ${inputPath}/${id}/*.jpg ${inputPath}/${id}/*.png)"`;
     return new Promise((resolve, reject) => {
         exec(command, (error, stdout, stderr) => {
             if (error) {
@@ -26,6 +29,10 @@ const execAudiveris = async(inputPath) => {
             }
             console.log(`stdout: ${stdout}`);
             console.log(`stderr: ${stderr}`);
+            for ( let i = 0; i < count; i++ ) {
+                fs.renameSync(`/data/outputs/${id}/temp/${i}.mxl`, `/data/outputs/${id}/${i}.mxl`);
+            }
+            fs.rmSync(`/data/outputs/${id}/temp`, { recursive: true });
             resolve();
         });
     });
@@ -33,28 +40,33 @@ const execAudiveris = async(inputPath) => {
 
 app.post('/uploads', async (req, res) => {
     const id = uuid();
-    const inputPath = `/data/inputs/${id}.pdf`;
+    const inPath = `${inputPath}/${id}`;
+    fs.mkdirSync(inPath);
 
     console.log('[REST-API] request', req.headers);
     const busboy = Busboy({ headers: req.headers });
-    console.log('[REST-API] Uploading file...');
+    console.log('[REST-API] Uploading files...');
 
     try {
-        await new Promise((resolve, reject) => {
-            busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+        const count = await new Promise((resolve, reject) => {
+            let index = 0;
+            busboy.on('file', (fieldname, file, item, encoding, mimetype) => {
+                const fileExtension = path.extname(item.filename);
                 const buffer = [];
                 file.on('data', data => buffer.push(data));
-                file.on('end', () => fs.writeFileSync(inputPath, Buffer.concat(buffer)));
+                file.on('end', () => fs.writeFileSync(`${inPath}/${index}${fileExtension}`, Buffer.concat(buffer)));
             });
 
-            busboy.on('finish', () => resolve());
+            busboy.on('finish', () => resolve(index+1));
 
             req.pipe(busboy);
         });
 
-        await execAudiveris(inputPath);
+        await execAudiveris(id, count);
 
-        res.status(200).send({ id });
+        fs.rmSync(inPath, { recursive: true });
+
+        res.status(200).send({ id, items: [...Array(count)].map((_, i) => `${i}.mxl`) });
     } catch(err) {
         res.status(500).send({ error: err }); 
     }
