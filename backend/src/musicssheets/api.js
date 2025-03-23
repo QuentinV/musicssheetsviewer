@@ -4,7 +4,7 @@ import FormData from 'form-data';
 import fetch from 'node-fetch';
 import fs from 'fs';
 import { getEnv } from '../api/env.js';
-import { extractScoreName } from './title/service.js';
+import { extractScoreInfo } from './service.js';
 
 export default {
     'sheets': {
@@ -87,11 +87,11 @@ export default {
     
                 const json = await result.json();
                 if ( result.ok ) {
-                    const title = await extractScoreName(`../data/${id}.mxl`);
-
+                    const info = await extractScoreInfo(`../data/${json.id}.mxl`);
+                   
                     await cs.musicssheets.insertOne({
                         uuid: json.id,
-                        title
+                        ...info
                     });
 
                     res.status(200).send({ id: json.id });
@@ -99,6 +99,7 @@ export default {
                     res.status(500).send({ error: json.error });
                 }
             } catch( e ) {
+                console.error(e);
                 res.sendStatus(500);
             }
         }
