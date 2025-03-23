@@ -4,6 +4,7 @@ import FormData from 'form-data';
 import fetch from 'node-fetch';
 import fs from 'fs';
 import { getEnv } from '../api/env.js';
+import { extractScoreName } from './title/service.js';
 
 export default {
     'sheets': {
@@ -49,6 +50,13 @@ export default {
             res.sendStatus(404);
         }
     },
+    'sheets/:id': {
+        get: async (req, res) => {
+            const { id } = req.params;
+            const name = await extractScoreName(`../data/${id}.mxl`);
+            res.send({ title: name });
+        }
+    },
     'uploads': {
         post: async (req, res) => {   
             const formData = new FormData();
@@ -79,8 +87,11 @@ export default {
     
                 const json = await result.json();
                 if ( result.ok ) {
+                    const title = await extractScoreName(`../data/${id}.mxl`);
+
                     await cs.musicssheets.insertOne({
-                        uuid: json.id
+                        uuid: json.id,
+                        title
                     });
 
                     res.status(200).send({ id: json.id });
