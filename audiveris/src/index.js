@@ -88,10 +88,12 @@ app.post('/uploads', async (req, res) => {
 
         await execAudiveris(id, files);
 
+        console.log('[REST-API] Remove temporary files...');
         fs.rmSync(inPath, { recursive: true });
 
         res.status(200).send({ id });
     } catch(err) {
+        console.log('[REST-API] Send error...');
         res.status(500).send({ error: err }); 
     }
 });
