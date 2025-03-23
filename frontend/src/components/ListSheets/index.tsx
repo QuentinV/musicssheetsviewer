@@ -21,7 +21,7 @@ export const ListSheets = () => {
     const itemTemplate = ({ uuid, title }: Sheet) => {
         return (
             <div 
-                className="w-2 h-5rem p-2 flex flex-wrap font-bold justify-content-center align-items-center border-round border-1 surface-border hover:bg-primary cursor-pointer" 
+                className="w-2 h-5rem m-2 p-2 flex flex-wrap font-bold justify-content-center align-items-center border-round border-1 surface-border hover:bg-primary cursor-pointer" 
                 key={uuid}
                 onClick={() => navigate(`/sheet/${uuid}`)}>
                 {title ?? uuid}

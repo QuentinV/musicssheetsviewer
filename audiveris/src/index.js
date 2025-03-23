@@ -78,6 +78,7 @@ app.post('/uploads', async (req, res) => {
                     const p = `${inPath}/${index}${fileExtension}`;
                     fs.writeFileSync(p, Buffer.concat(buffer));
                     files.push(p);
+                    index++;
                 });
             });
 

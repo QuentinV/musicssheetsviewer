@@ -69,7 +69,7 @@ export default {
 
                     file.on('end', () => {
                         const completeBuffer = Buffer.concat(buffer);
-                        formData.append('file', completeBuffer, filename);
+                        formData.append('file[]', completeBuffer, filename);
                     });
                 });
 
