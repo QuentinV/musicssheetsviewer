@@ -53,8 +53,19 @@ export default {
     'sheets/:id': {
         get: async (req, res) => {
             const { id } = req.params;
-            const name = await extractScoreName(`../data/${id}.mxl`);
-            res.send({ title: name });
+            const data = await cs.musicssheets.findOne({ uuid: id });
+            if ( !data ) {
+                res.sendStatus(404);
+                return;
+            }
+            
+            res.send(data);
+        },
+        put: async(req, res) => {
+            const { id } = req.params;
+            const { title } = req.body;
+            const result = await cs.musicssheets.updateOne({ uuid: id }, { $set: { title } });
+            res.sendStatus(result.matchedCount > 0 ? 200 : 404);
         }
     },
     'uploads': {
