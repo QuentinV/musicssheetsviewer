@@ -1,12 +1,15 @@
 # MusicsSheetsViewer
 
-## Intro
+## Description
 
 Basic starter app that combines
 - `audiveris` OMR via a custom made rest api
 - mongodb
 - nodejs backend with rest api to manage music scores
-- simple frontend to list, manage and upload pictures of musics sheets
+- simple frontend to list, manage and upload pictures of musics sheets. Using `opensheetmusicdisplay` to render music scores.
+
+Scan your favorite musics to play it everywhere. In a responsive design way.
+
 
 ## Setup
 
