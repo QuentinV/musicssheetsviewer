@@ -2,6 +2,8 @@ import AdmZip from 'adm-zip';
 import { parseStringPromise } from 'xml2js';
 
 export const extractScoreInfo =async (mxlFilePath) => {
+	console.log(`Extracting score info from ${mxlFilePath}`);
+	
 	// Load the .mxl file
 	const zip = new AdmZip(mxlFilePath);
 	const entries = zip.getEntries();
@@ -9,7 +11,7 @@ export const extractScoreInfo =async (mxlFilePath) => {
 	// Find the main MusicXML file (usually ends with .xml)
 	const musicXmlEntry = entries.find(entry => entry.entryName.endsWith(".xml"));
 	if (!musicXmlEntry) {
-	throw new Error("MusicXML file not found in .mxl archive.");
+		throw new Error("MusicXML file not found in .mxl archive.");
 	}
 
 	// Read the XML content
