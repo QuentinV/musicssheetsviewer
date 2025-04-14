@@ -44,7 +44,7 @@
     "eslint": "eslint src/**/* --fix",
     "prettier": "prettier --write src/**/*"
   },
-  "proxy": "http://localhost:3010",
+  "proxy": "http://musicssheets-service:3010",
   "browserslist": {
     "production": [
       ">0.2%",

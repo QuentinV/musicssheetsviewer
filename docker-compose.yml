@@ -21,7 +21,7 @@ services:
     environment:
       - NODE_ENV=production
     volumes:
-      - ./:/home/node/app
+      - ./backend:/home/node/app
     expose:
       - "3010"
     ports:
@@ -29,6 +29,7 @@ services:
     command: "yarn start"
     depends_on:
       - musicssheets-db
+      - audiveris
     restart: unless-stopped
     networks:
       - musicssheetsnet
@@ -40,7 +41,7 @@ services:
     environment:
       - NODE_ENV=production
     volumes:
-      - ./:/home/node/app
+      - ./frontend:/home/node/app
     ports:
       - "8095:3000"
     command: "yarn start"
