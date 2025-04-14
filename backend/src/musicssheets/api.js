@@ -66,6 +66,12 @@ export default {
             const { title } = req.body;
             const result = await cs.musicssheets.updateOne({ uuid: id }, { $set: { title } });
             res.sendStatus(result.matchedCount > 0 ? 200 : 404);
+        },
+        delete: async(req, res) => {
+            const { id } = req.params;
+            const result = await cs.musicssheets.deleteOne({ uuid: id });
+            fs.rmSync(`../data/${id}.mxl`);
+            res.sendStatus(result.deletedCount > 0 ? 200 : 404);
         }
     },
     'uploads': {

@@ -1,5 +1,6 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Toast } from 'primereact/toast';
 import { FileUpload, FileUploadHeaderTemplateOptions, ItemTemplateOptions,} from 'primereact/fileupload';
 import { Button } from 'primereact/button';
@@ -9,9 +10,12 @@ import { Tag } from 'primereact/tag';
 export const UploadSheets = () => {
     const toast = useRef<Toast>(null);
     const fileUploadRef = useRef<FileUpload>(null);
+    const navigate = useNavigate();
+    const [hasError, setHasError] = useState<boolean>(false);
 
     const onTemplateUpload = () => {
         toast.current?.show({ severity: 'info', summary: 'Success', detail: 'File Uploaded' });
+        navigate('/');
     };
 
     const headerTemplate = (options: FileUploadHeaderTemplateOptions) => {
@@ -65,6 +69,8 @@ export const UploadSheets = () => {
             <Tooltip target=".custom-upload-btn" content="Upload" position="bottom" />
             <Tooltip target=".custom-cancel-btn" content="Clear" position="bottom" />
 
+            {hasError && (<h1 className='text-red-500'>An error occured</h1>)}
+
             <FileUpload 
                 ref={fileUploadRef} 
                 name="file[]" 
@@ -72,6 +78,7 @@ export const UploadSheets = () => {
                 multiple 
                 accept="image/*"
                 onUpload={onTemplateUpload}
+                onError={() => setHasError(true)}
                 headerTemplate={headerTemplate} itemTemplate={itemTemplate} emptyTemplate={emptyTemplate}
                 chooseOptions={chooseOptions} uploadOptions={uploadOptions} cancelOptions={cancelOptions} />
         </div>
