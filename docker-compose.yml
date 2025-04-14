@@ -3,8 +3,6 @@ services:
   musicssheets-db:
     container_name: musicssheets-db
     image: mongo
-    ports:
-      - '27017:27017'
     restart: unless-stopped
     volumes:
       - ./db:/data/db
